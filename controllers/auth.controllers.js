@@ -40,43 +40,47 @@ exports.signup = async (req,res)=>{
 
 
 exports.signin = async (req,res)=>{
+    try {
+        const {userId,password} = req.body;
 
-    const {userId,password} = req.body;
+        //verify whether the userId is correct or not 
+        const user = await User.findOne({userId});
 
-    //verify whether the userId is correct or not 
+        if(!user){
+            res.status(400).send({mesage:"UserId doesn't exist"});
+            return;
+        }
 
-    const user = await User.findOne({userId});
+        if(user.userStatus!==constants.userStatus.approved){
+            res.status(403).send({message:"Only Approved users are allowed to login"});
+            return;
+        }
 
-    if(!user){
-        res.status(400).send({mesage:"UserId doesn't exists"});
-        return;
+        var isCorrectPassword= bcrypt.compareSync(req.body.password, user.password);
+
+        if(!isCorrectPassword){
+            res.status(401).send({message:"Invalid Password"});
+            return;
+        }
+
+        const token = jwt.sign({id:user.userId},config.secret,{
+            expiresIn:120000
+        });
+
+        const {subject, html, text} = await userLoggedIn(user);
+        await notificationClient.sendEmail([user.email], subject, html, text);
+
+        res.status(200)
+        .send({
+            name:user.name,
+            userId:user.userId,
+            email:user.email,
+            userTypes:user.userTypes,
+            userStatus:user.userStatus,
+            accessToken:token
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Internal Server Error' });
     }
-
-
-    if(user.userStatus!==constants.userStatus.approved){
-        res.status(403).send({message:"Only Approved users are allowed to login"});
-        return;
-    }
-
-    var isCorrectPassword= bcrypt.compareSync(req.body.password, user.password);
-
-    if(!isCorrectPassword){
-        res.status(401).send({message:"Invalid Password"});
-    }
-
-    const token = jwt.sign({id:user.userId},config.secret,{
-        expiresIn:120000
-    });
-
-    res.status(200)
-    .send({
-        name:user.name,
-        userId:user.userId,
-        email:user.email,
-        userTypes:user.userTypes,
-        userStatus:user.userStatus,
-        accessToken:token
-    })
-    const {subject, html, text} = userLoggedIn(user);
-    notificationClient.sendEmail([user.email], subject, html, text);
 }
