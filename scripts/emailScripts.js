@@ -38,26 +38,28 @@ const userLoggedIn = (user) =>{
 }
 
 
-const paymentSuccess = (user) => {
-    return {
-      subject: "Successful Payment Received",
-      html: `
-        <div style="background-color: #f2f2f2; padding: 20px; text-align: center;">
-          <h5>Hello ${user.userId}, </h5>
-          <br />
-          We are pleased to inform you that your payment for the following movie: <b>${user.movieId}</b> was received successfully. 
-          <br />
-          Thank you for choosing us and supporting your favorite films. We hope you had a great experience and we look forward to serving you again in the future.
-          <br />
-          <hr />
-          Best regards,
-          <h3 style="margin: 0;">Book My Show</h3>
-          <img src="https://logodix.com/logo/2011124.jpg" style="width: 150px; height: auto; margin-top: 20px;" />
-        </div>
+const paymentSuccess = (user, booking, payment) => {
+  return {
+      subject : "Book My Show - Payment successful!",
+      html : `
+      <div>
+      <h5>Hi ${user.name},</h5>
+      <br/>
+      Your payment of <b>₹ ${payment.amount}</b> have been confirmed!
+      <br/>
+      Your Booking ID required at the time of entering to the theatre will be <b>${booking._id}</b>
+      <br/>
+      Enjoy your show!
+      <br/>
+      <hr/>
+      Thanks & Regards,
+      <br/>
+      <h3>Book My Show</h3>
+      <img src="https://logodix.com/logo/2011124.jpg"/>
+      </div>
       `
-    };
   };
-  
+}
 
 // const newMovieAdded = (user,movie,theatre)=>{
 
